@@ -1,32 +1,49 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Document</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-        crossorigin=""/>
-  <style>
-    #map { height: 180px; }
+<section class="bg-[#132D72] text-white rounded-2xl mx-auto mt-8 w-11/12 flex flex-col items-center justify-center relative overflow-hidden pb-10 pt-16">
 
-  </style>
-</head>
-<body>
-<div id="map"></div>
+  <h1 class="text-white text-6xl md:text-8xl font-extrabold text-center leading-tight mb-6 transform -rotate-6 tracking-wide">
+    GET ANYTHING <br />
+    <span class="block rotate-3">DONE</span>
+  </h1>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-        crossorigin=""></script>
+  <p class="text-center text-lg md:text-xl mb-8 font-medium">
+    Post any task. Pick the best person. Get it done.
+  </p>
 
-<script>
-  var map = L.map('map').setView([51.505, -0.09], 13);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  }).addTo(map);
-</script>
-</body>
-</html>
+  <div class="flex flex-col md:flex-row items-center gap-4">
+    <button
+      class="bg-[#2878F0] hover:bg-[#1f63c2] text-white font-semibold px-8 py-3 rounded-full flex items-center gap-2 transition"
+    routerLink="/post/step1">
+      Start posting Tasks
+      <span class="text-xl">→</span>
+    </button>
+
+    <button
+      class="bg-white text-[#2878F0] font-semibold px-8 py-3 rounded-full flex items-center gap-2 transition hover:bg-gray-100">
+      Find Tasks
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+           stroke-width="2" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="m21 21-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" />
+      </svg>
+    </button>
+  </div>
+
+  <img
+    src="illustration/left-character.png"
+    alt="character left"
+    class="absolute bottom-0 left-4 w-36 md:w-48"
+  />
+
+  <img
+    src="illustration/right-character.png"
+    alt="character right"
+    class="absolute top-0 right-10 w-40 md:w-60 z-10"
+  />
+
+  <img
+    src="illustration/bubbles.png"
+    alt="bubbles decoration"
+    class="absolute bottom-6 right-6 w-24 md:w-40 opacity-90 z-0 -rotate-45 "
+  />
+
+</section>
