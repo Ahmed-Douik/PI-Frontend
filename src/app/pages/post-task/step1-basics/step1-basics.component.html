@@ -1,47 +1,69 @@
-<div class="max-w-3xl mx-auto px-6 py-8">
-  <h2 class="text-2xl font-bold text-gray-800 mb-6">
-    Let’s start with the basics
-  </h2>
+<div class="max-w-6xl mx-auto px-6 py-10 flex gap-12">
+  <aside class="w-48">
+    <h3 class="text-lg font-bold mb-4">Post a Task</h3>
 
-  <form class="space-y-5">
-    <div>
-      <label class="block text-gray-700 text-sm font-medium mb-1">Title</label>
-      <input
-        type="text"
-        placeholder="e.g. Help move my fridge..."
-        class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-      />
-    </div>
+    <ul class="space-y-3">
+      <li class="flex items-center">
+        <span class="w-1 h-5 bg-blue-600 rounded mr-2"></span>
+        <span class="text-black font-medium">Title & Date</span>
+      </li>
+      <li class="flex items-center text-gray-400">
+        <span class="w-1 h-5 bg-transparent rounded mr-2"></span>
+        <span>Rate</span>
+      </li>
+      <li class="flex items-center text-gray-400">
+        <span class="w-1 h-5 bg-transparent rounded mr-2"></span>
+        <span>Location</span>
+      </li>
+    </ul>
+  </aside>
 
-    <div>
-      <label class="block text-gray-700 text-sm font-medium mb-1">Description</label>
-      <textarea
-        rows="3"
-        placeholder="Add few details..."
-        class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-      ></textarea>
-    </div>
+  <main class="flex-1">
+    <h2 class="text-2xl font-semibold mb-6">Let’s start with the basics</h2>
 
-    <div>
-      <label class="block text-gray-700 text-sm font-medium mb-1">When do you need it done?</label>
-      <input
-        type="datetime-local"
-        class="w-full border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-      />
-    </div>
+    <form class="space-y-6">
+      <div>
+        <label class="block text-sm font-medium mb-1">Title</label>
+        <input
+          type="text"
+          placeholder="exp. Help move my fridge..."
+          class="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        />
+      </div>
 
-    <div class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
-      <p class="text-gray-500 mb-2">Drag & drop files or <span class="text-blue-600 cursor-pointer">Browse</span></p>
-      <p class="text-sm text-gray-400">Supported formats: JPEG, PNG, PDF, DOC, etc.</p>
-    </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Description</label>
+        <textarea
+          rows="3"
+          placeholder="Add few Details..."
+          class="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        ></textarea>
+      </div>
 
-    <div class="text-right">
-      <button
-        routerLink="../step2"
-        class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition"
-      >
-        Next
-      </button>
-    </div>
-  </form>
+      <div>
+        <label class="block text-sm font-medium mb-2">When do you need it done?</label>
+        <div class="flex gap-3">
+          <button type="button" class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">Apr 1, 2025</button>
+          <button type="button" class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">8:30 AM</button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-2">Upload photo</label>
+        <div class="border-2 border-dashed border-gray-300 rounded-md p-8 text-center">
+          <p class="text-gray-600 mb-2">Drag & drop files or <a class="text-blue-600 underline">Browse</a></p>
+          <p class="text-xs text-gray-400">Supported formats: JPEG, PNG, MP4, PDF, etc.</p>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <a
+          routerLink="/post/step2"
+          class="inline-flex items-center bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition"
+        >
+          Next
+        </a>
+      </div>
+    </form>
+  </main>
 </div>
