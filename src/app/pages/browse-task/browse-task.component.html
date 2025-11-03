@@ -1,0 +1,206 @@
+<!-- src/app/pages/browse-task/browse-task.component.html -->
+<div class="h-screen flex flex-col bg-white">
+  <!-- Search & Filters -->
+  <div class="bg-white border-b border-gray-200 px-6 py-4">
+    <div class="flex items-center justify-between max-w-7xl mx-auto">
+      <div class="relative flex-1 max-w-md">
+        <input type="text" placeholder="Search for a job/task"
+               class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <svg class="absolute right-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+      </div>
+
+      <div class="flex space-x-4 ml-6">
+        <!-- Category -->
+        <div class="relative">
+          <button (click)="toggleCategory()"
+                  class="flex items-center space-x-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+            <span>{{ getCategoryLabel() }}</span>
+            <svg class="w-4 h-4 transition-transform" [class.rotate-180]="showCategory"
+                 fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+            </svg>
+          </button>
+          <div *ngIf="showCategory"
+               class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+            <div *ngFor="let cat of categories"
+                 (click)="selectCategory(cat.value)"
+                 class="px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer first:rounded-t-lg last:rounded-b-lg">
+              {{ cat.label }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Distance -->
+        <div class="relative">
+          <button (click)="toggleDistance()"
+                  class="flex items-center space-x-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+            <span>Distance: {{ filters.maxDistance }} km</span>
+            <svg class="w-4 h-4 transition-transform" [class.rotate-180]="showDistance"
+                 fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+            </svg>
+          </button>
+          <div *ngIf="showDistance"
+               class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50">
+            <div class="text-xs text-gray-600 mb-2">
+              Max Distance: <strong>{{ filters.maxDistance }}</strong> km
+            </div>
+            <input type="range" min="1" max="100" step="5"
+                   [(ngModel)]="filters.maxDistance"
+                   (input)="onDistanceChange()"
+                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider">
+          </div>
+        </div>
+
+        <!-- Price -->
+        <div class="relative">
+          <button (click)="togglePrice()"
+                  class="flex items-center space-x-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+            <span>Price: {{ filters.maxPrice }} DT</span>
+            <svg class="w-4 h-4 transition-transform" [class.rotate-180]="showPrice"
+                 fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+            </svg>
+          </button>
+          <div *ngIf="showPrice"
+               class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 p-4 z-50">
+            <div class="text-xs text-gray-600 mb-2">
+              Max Price: <strong>{{ filters.maxPrice }}</strong> DT
+            </div>
+            <input type="range" min="0" max="500" step="10"
+                   [(ngModel)]="filters.maxPrice"
+                   (input)="onPriceChange()"
+                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="flex-1 flex overflow-hidden">
+    <!-- Task List -->
+    <div class="w-96 bg-gray-50 overflow-y-auto border-r border-gray-200">
+      <div class="p-4 space-y-3">
+        <div *ngFor="let task of tasks"
+             class="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-200 cursor-pointer"
+             (click)="selectTask(task)">
+          
+          <h3 class="font-semibold text-gray-900 mb-3">{{ task.title }}</h3>
+
+          <div class="space-y-2 text-sm text-gray-600">
+            <div class="flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <span>{{ task.date }}</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span>{{ task.time }}</span>
+            </div>
+            <div *ngIf="task.distance" class="flex items-center space-x-2 text-xs text-gray-500">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              </svg>
+              <span>{{ task.distance }} km away</span>
+            </div>
+          </div>
+
+          <div *ngIf="task.price" class="mt-4 text-right">
+            <span class="text-2xl font-bold text-gray-900">{{ task.price }}</span>
+          </div>
+
+          <div class="mt-4 text-right">
+            <button (click)="seeMore(task); $event.stopPropagation()"
+                    class="text-sm font-medium text-blue-600 hover:text-blue-800 underline">
+              See more
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div #mapContainer class="flex-1 relative bg-blue-50 h-full z-0"></div>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeModal()">
+    <div class="absolute inset-0 bg-black bg-opacity-60"></div>
+    <div class="relative bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-screen overflow-y-auto"
+         (click)="$event.stopPropagation()"
+         style="animation: modalFadeIn 0.2s ease-out;">
+      <!-- Same as before -->
+      <div class="px-6 pt-6 pb-4 border-b border-gray-100">
+        <div class="flex items-start justify-between">
+          <h3 class="text-2xl font-bold text-gray-900">{{ selectedTask?.title }}</h3>
+          <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="px-6 py-6 space-y-5">
+        <div class="flex items-center space-x-6 text-sm text-gray-600">
+          <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span>{{ selectedTask?.date }}</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>{{ selectedTask?.time }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="selectedTask?.price" class="text-right">
+          <span class="text-3xl font-bold text-blue-600">{{ selectedTask?.price }}</span>
+        </div>
+
+        <div>
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Description</h4>
+          <p class="text-gray-600 text-sm leading-relaxed">{{ selectedTask?.description }}</p>
+        </div>
+
+        <div *ngIf="selectedTask?.location as loc">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Location</h4>
+          <div class="flex items-center space-x-2 text-sm text-gray-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span>{{ loc.lat }}, {{ loc.lng }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-50 px-6 py-4 rounded-b-xl flex justify-end">
+        <button (click)="postuler()"
+                class="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors">
+          Postuler
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
