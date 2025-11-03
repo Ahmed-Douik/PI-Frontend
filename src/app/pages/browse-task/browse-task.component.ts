@@ -1,4 +1,3 @@
-// src/app/pages/browse-task/browse-task.component.ts
 import {
   Component,
   AfterViewInit,
@@ -40,19 +39,19 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
   selectedTask: Task | null = null;
   showModal = false;
 
-
   filters: Filter = {
     category: 'all',
     maxDistance: 100,
     maxPrice: 500
   };
 
+  searchTerm = '';
 
   showCategory = false;
   showDistance = false;
   showPrice = false;
 
- 
+
   categories = [
     { value: 'all', label: 'All Categories' },
     { value: 'cleaning', label: 'Cleaning' },
@@ -61,9 +60,7 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
     { value: 'plumbing', label: 'Plumbing' },
   ];
 
-
   userLocation = { lat: 36.8065, lng: 10.1815 };
-
 
   allTasks: Task[] = [
     {
@@ -101,15 +98,15 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
       title: 'Fix a leaking tap',
       date: 'Wed, 17 Oct',
       time: '10AM',
-      price: '60dt',
+      price: '60DT',
       location: { lat: 36.8509, lng: 10.2315 },
-      description: '3-bedroom apartment...',
+      description: 'Kitchen tap leaking...',
       category: 'plumbing'
     },
-    
   ];
 
   tasks: Task[] = [];
+
 
   ngAfterViewInit(): void {
     this.initMap();
@@ -127,7 +124,7 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
     return cat ? cat.label : 'Category';
   }
 
-  
+
   calculateDistances(): void {
     this.allTasks.forEach(task => {
       task.distance = this.haversine(
@@ -137,61 +134,36 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  private haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return Math.round(R * c);
   }
 
-  
+
   applyFilters(): void {
     this.tasks = this.allTasks.filter(task => {
       const catMatch = this.filters.category === 'all' || task.category === this.filters.category;
+
       const distMatch = !task.distance || task.distance <= this.filters.maxDistance;
-      const priceMatch = !task.price || parseInt(task.price) <= this.filters.maxPrice;
-      return catMatch && distMatch && priceMatch;
+
+      const priceMatch = !task.price || parseInt(task.price, 10) <= this.filters.maxPrice;
+
+      const titleMatch = !this.searchTerm ||
+        task.title.toLowerCase().includes(this.searchTerm.toLowerCase());
+
+      return catMatch && distMatch && priceMatch && titleMatch;
     });
+
     this.updateMapMarkers();
   }
 
-  
-  updateMapMarkers(): void {
-    this.markers.forEach(m => m.remove());
-    this.markers = [];
-    this.tasks.forEach(task => {
-      const m = this.createGlowMarker(task.location.lat, task.location.lng);
-      m.bindPopup(this.popupContent(task)).addTo(this.map);
-      this.markers.push(m);
-    });
-  }
 
-  
-  toggleCategory() { this.showCategory = !this.showCategory; this.showDistance = this.showPrice = false; }
-  toggleDistance() { this.showDistance = !this.showDistance; this.showCategory = this.showPrice = false; }
-  togglePrice()    { this.showPrice = !this.showPrice; this.showCategory = this.showDistance = false; }
-
-  
-  selectCategory(cat: string) {
-    this.filters.category = cat;
-    this.showCategory = false;
-    this.applyFilters();
-  }
-
-  
-  onDistanceChange(): void {
-    this.applyFilters();
-  }
-
-  onPriceChange(): void {
-    this.applyFilters();
-  }
-
- 
   private initMap(): void {
     this.map = L.map(this.mapContainer.nativeElement, {
       center: [35.8, 9.5],
@@ -228,7 +200,31 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
       </div>`;
   }
 
- 
+  updateMapMarkers(): void {
+    this.markers.forEach(m => m.remove());
+    this.markers = [];
+
+    this.tasks.forEach(task => {
+      const m = this.createGlowMarker(task.location.lat, task.location.lng);
+      m.bindPopup(this.popupContent(task)).addTo(this.map);
+      this.markers.push(m);
+    });
+  }
+
+  toggleCategory() { this.showCategory = !this.showCategory; this.showDistance = this.showPrice = false; }
+  toggleDistance() { this.showDistance = !this.showDistance; this.showCategory = this.showPrice = false; }
+  togglePrice()    { this.showPrice = !this.showPrice; this.showCategory = this.showDistance = false; }
+
+  selectCategory(cat: string) {
+    this.filters.category = cat;
+    this.showCategory = false;
+    this.applyFilters();
+  }
+
+  onDistanceChange(): void { this.applyFilters(); }
+  onPriceChange(): void { this.applyFilters(); }
+
+
   selectTask(task: Task): void {
     const marker = this.markers.find(m => {
       const pos = m.getLatLng();

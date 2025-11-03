@@ -4,8 +4,11 @@
   <div class="bg-white border-b border-gray-200 px-6 py-4">
     <div class="flex items-center justify-between max-w-7xl mx-auto">
       <div class="relative flex-1 max-w-md">
-        <input type="text" placeholder="Search for a job/task"
-               class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="text"
+               placeholder="Search for a job/task"
+               class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+               [(ngModel)]="searchTerm"
+               (ngModelChange)="applyFilters()">
         <svg class="absolute right-3 top-2.5 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -91,7 +94,7 @@
         <div *ngFor="let task of tasks"
              class="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-200 cursor-pointer"
              (click)="selectTask(task)">
-          
+
           <h3 class="font-semibold text-gray-900 mb-3">{{ task.title }}</h3>
 
           <div class="space-y-2 text-sm text-gray-600">
@@ -136,13 +139,11 @@
     <div #mapContainer class="flex-1 relative bg-blue-50 h-full z-0"></div>
   </div>
 
-  <!-- Modal -->
   <div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeModal()">
     <div class="absolute inset-0 bg-black bg-opacity-60"></div>
     <div class="relative bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-screen overflow-y-auto"
          (click)="$event.stopPropagation()"
          style="animation: modalFadeIn 0.2s ease-out;">
-      <!-- Same as before -->
       <div class="px-6 pt-6 pb-4 border-b border-gray-100">
         <div class="flex items-start justify-between">
           <h3 class="text-2xl font-bold text-gray-900">{{ selectedTask?.title }}</h3>
