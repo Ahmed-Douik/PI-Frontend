@@ -43,16 +43,30 @@
       <div>
         <label class="block text-sm font-medium mb-2">When do you need it done?</label>
         <div class="flex gap-3">
-          <button type="button" class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">Apr 1, 2025</button>
-          <button type="button" class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">8:30 AM</button>
+          <input type="date" id="date" name="date"class="px-3 py-1 rounded-full bg-gray-100 text-gray-700">
+          <input type="time" id="time" name="time">
+
+
         </div>
       </div>
-
       <div>
         <label class="block text-sm font-medium mb-2">Upload photo</label>
-        <div class="border-2 border-dashed border-gray-300 rounded-md p-8 text-center">
-          <p class="text-gray-600 mb-2">Drag & drop files or <a class="text-blue-600 underline">Browse</a></p>
-          <p class="text-xs text-gray-400">Supported formats: JPEG, PNG, MP4, PDF, etc.</p>
+
+        <div class="border-2 border-dashed border-gray-300 rounded-md p-8 text-center relative">
+          <input
+            type="file"
+            id="fileUpload"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            accept=".jpg,.jpeg,.png,.mp4,.pdf"
+          />
+
+          <p class="text-gray-600 mb-2">
+            Drag & drop files or
+            <label for="fileUpload" class="text-blue-600 underline cursor-pointer">Browse</label>
+          </p>
+          <p class="text-xs text-gray-400">
+            Supported formats: JPEG, PNG, MP4, PDF, etc.
+          </p>
         </div>
       </div>
 
