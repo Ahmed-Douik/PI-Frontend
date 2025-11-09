@@ -1,5 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 
+interface Applicant {
+  id: number;
+  name: string;
+  contact: string;
+  email: string;
+  proofImage?: string;
+}
+
 interface Task {
   id: number;
   title: string;
@@ -10,6 +18,7 @@ interface Task {
   description: string;
   category: string;
   status?: 'available' | 'assigned' | 'inProgress' | 'completed' | 'cancelled';
+  assignedApplicant?: Applicant;
 }
 
 @Component({
@@ -26,7 +35,7 @@ export class TasksComponent implements OnInit {
       time: 'Anytime',
       price: '120DT',
       location: { lat: 36.8065, lng: 10.1815 },
-      description: 'Need someone to trim hedges and clean the garden area. Should take about 3-4 hours.',
+      description: 'Need someone to trim hedges and clean the garden area.',
       category: 'gardening',
       status: 'available'
     },
@@ -39,7 +48,13 @@ export class TasksComponent implements OnInit {
       location: { lat: 36.8509, lng: 10.2315 },
       description: '3-bedroom apartment needs deep cleaning including kitchen and bathrooms.',
       category: 'cleaning',
-      status: 'assigned'
+      status: 'assigned',
+      assignedApplicant: {
+        id: 2,
+        name: 'Emma Smith',
+        contact: '+216 98 123 456',
+        email: 'emma@example.com'
+      }
     },
     {
       id: 3,
@@ -48,9 +63,16 @@ export class TasksComponent implements OnInit {
       time: '5PM',
       price: '20DT',
       location: { lat: 36.8065, lng: 10.1815 },
-      description: 'Pick up groceries from Carrefour and deliver to my apartment.',
+      description: 'Pick up groceries and deliver to my apartment.',
       category: 'delivery',
-      status: 'inProgress'
+      status: 'completed',
+      assignedApplicant: {
+        id: 1,
+        name: 'John Doe',
+        contact: '+216 55 999 888',
+        email: 'john@example.com',
+        proofImage: 'assets/proof.jpg'
+      }
     }
   ];
 
@@ -59,6 +81,13 @@ export class TasksComponent implements OnInit {
   selectedTask: Task | null = null;
   showViewModal = false;
   showEditModal = false;
+
+  // Fake list of applicants
+  applicants: Applicant[] = [
+    { id: 1, name: 'John Doe', contact: '+216 55 999 888', email: 'john@example.com' },
+    { id: 2, name: 'Emma Smith', contact: '+216 98 123 456', email: 'emma@example.com' },
+    { id: 3, name: 'Adam Karim', contact: '+216 22 777 555', email: 'adam@example.com' }
+  ];
 
   statusFilters = [
     { label: 'All', value: 'all' },
@@ -105,6 +134,24 @@ export class TasksComponent implements OnInit {
     if (confirm(`Are you sure you want to delete "${task.title}"?`)) {
       this.allTasks = this.allTasks.filter(t => t.id !== task.id);
       this.filterByStatus(this.selectedStatus);
+    }
+  }
+
+  cancelTask(task: Task): void {
+    if (confirm(`Are you sure you want to cancel "${task.title}"?`)) {
+      const index = this.allTasks.findIndex(t => t.id === task.id);
+      if (index !== -1) {
+        this.allTasks[index].status = 'cancelled';
+      }
+      this.filterByStatus(this.selectedStatus);
+    }
+  }
+
+  assignApplicant(applicant: Applicant): void {
+    if (this.selectedTask) {
+      this.selectedTask.assignedApplicant = applicant;
+      this.selectedTask.status = 'assigned';
+      this.showViewModal = true;
     }
   }
 

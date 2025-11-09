@@ -5,13 +5,13 @@ interface User {
   lastName: string;
   email: string;
   description?: string;
-  rating: number; // note de l'utilisateur
+  rating: number;
 }
 
 interface Comment {
   author: string;
   text: string;
-  rating: number; // 1 à 5
+  rating: number;
 }
 
 @Component({
@@ -21,10 +21,10 @@ interface Comment {
 })
 export class InfoComponent {
   user: User = {
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    description: '',
+    firstName: 'Ahmed',
+    lastName: 'Douik',
+    email: 'a.douik456@gmail.com',
+    description: 'Web Developer | Java Full Stack | Passionate IT Student (ISET Rades)',
     rating: 4 // note fictive
   };
 
@@ -32,9 +32,9 @@ export class InfoComponent {
   cvFileName: string | null = null;
 
   comments: Comment[] = [
-    { author: 'Alice Johnson', text: 'Great work!', rating: 5 },
-    { author: 'Bob Smith', text: 'Professional and serious.', rating: 4 },
-    { author: 'Charlie', text: 'Good communication.', rating: 3 }
+    { author: 'Ghassen Boukhris', text: 'Great work!', rating: 5 },
+    { author: 'Islem Gharsallah', text: 'Professional and serious.', rating: 4 },
+    { author: 'Adem Attar', text: 'Good communication.', rating: 3 }
   ];
 
   uploadProfileImage(event: Event) {
@@ -60,7 +60,6 @@ export class InfoComponent {
 
   saveDescription() {
     alert('Description saved successfully!');
-    // Ici tu peux envoyer user.description à ton backend via un service Angular
   }
 
   getInitials(author: string): string {
