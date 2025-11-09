@@ -139,6 +139,8 @@
     <div #mapContainer class="flex-1 relative bg-blue-50 h-full z-0"></div>
   </div>
 
+  <!-- ... le reste du HTML inchangé jusqu'au modal -->
+
   <div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeModal()">
     <div class="absolute inset-0 bg-black bg-opacity-60"></div>
     <div class="relative bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-screen overflow-y-auto"
@@ -173,15 +175,32 @@
           </div>
         </div>
 
-        <div *ngIf="selectedTask?.price" class="text-right">
-          <span class="text-3xl font-bold text-blue-600">{{ selectedTask?.price }}</span>
+        <!-- Section du prix ajustable -->
+        <div class="text-center mt-4">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Your Proposed Price</h4>
+          <div class="flex items-center justify-center space-x-4">
+            <button (click)="decreasePrice()" class="px-3 py-1 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300">−</button>
+            <span class="text-3xl font-bold text-blue-600">{{ proposedPrice }} DT</span>
+            <button (click)="increasePrice()" class="px-3 py-1 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300">+</button>
+          </div>
         </div>
 
+        <!-- Message -->
+        <div class="mt-6">
+          <h4 class="text-sm font-semibold text-gray-700 mb-2">Message</h4>
+          <textarea [(ngModel)]="message"
+                    rows="3"
+                    placeholder="Write a short message for the employer..."
+                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"></textarea>
+        </div>
+
+        <!-- Description -->
         <div>
           <h4 class="text-sm font-semibold text-gray-700 mb-2">Description</h4>
           <p class="text-gray-600 text-sm leading-relaxed">{{ selectedTask?.description }}</p>
         </div>
 
+        <!-- Location -->
         <div *ngIf="selectedTask?.location as loc">
           <h4 class="text-sm font-semibold text-gray-700 mb-2">Location</h4>
           <div class="flex items-center space-x-2 text-sm text-gray-600">
@@ -205,3 +224,4 @@
     </div>
   </div>
 </div>
+

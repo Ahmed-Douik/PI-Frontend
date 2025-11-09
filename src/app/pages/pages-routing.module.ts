@@ -12,6 +12,12 @@ const routes: Routes = [
     loadChildren: () =>
       import('./post-task/post-task.module').then((m) => m.PostTaskModule),
   },
+
+  {
+    path: 'profil',
+    loadChildren: () =>
+      import('./profil/profil.module').then((m) => m.ProfilModule),
+  }
 ];
 
 @NgModule({

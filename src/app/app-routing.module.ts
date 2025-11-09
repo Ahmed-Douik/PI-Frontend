@@ -13,8 +13,8 @@ const routes: Routes = [
     loadChildren: () =>
       import('./auth/auth.module').then((m) => m.AuthModule),
   },
-  
-  {path:'browse-tasks', component:BrowseTaskComponent}
+
+  {path:'browse-tasks', component:BrowseTaskComponent},
 ];
 
 @NgModule({

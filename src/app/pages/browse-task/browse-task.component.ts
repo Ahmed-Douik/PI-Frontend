@@ -28,7 +28,7 @@ interface Filter {
 @Component({
   selector: 'app-browse-task',
   templateUrl: './browse-task.component.html',
-  styleUrls: ['./browse-task.component.css']
+  styleUrls: ['./browse-task.component.css'],
 })
 export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
   @ViewChild('mapContainer') mapContainer!: ElementRef<HTMLDivElement>;
@@ -39,10 +39,14 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
   selectedTask: Task | null = null;
   showModal = false;
 
+  // Champs ajoutés
+  proposedPrice: number = 0;
+  message: string = '';
+
   filters: Filter = {
     category: 'all',
     maxDistance: 100,
-    maxPrice: 500
+    maxPrice: 500,
   };
 
   searchTerm = '';
@@ -50,7 +54,6 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
   showCategory = false;
   showDistance = false;
   showPrice = false;
-
 
   categories = [
     { value: 'all', label: 'All Categories' },
@@ -71,7 +74,7 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
       price: '120DT',
       location: { lat: 36.8065, lng: 10.1815 },
       description: 'Need someone to trim hedges...',
-      category: 'gardening'
+      category: 'gardening',
     },
     {
       id: 2,
@@ -81,7 +84,7 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
       price: '90DT',
       location: { lat: 36.8509, lng: 10.2315 },
       description: '3-bedroom apartment...',
-      category: 'cleaning'
+      category: 'cleaning',
     },
     {
       id: 3,
@@ -91,7 +94,7 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
       price: '20DT',
       location: { lat: 36.8065, lng: 10.1815 },
       description: 'Pick up groceries...',
-      category: 'delivery'
+      category: 'delivery',
     },
     {
       id: 4,
@@ -101,12 +104,11 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
       price: '60DT',
       location: { lat: 36.8509, lng: 10.2315 },
       description: 'Kitchen tap leaking...',
-      category: 'plumbing'
+      category: 'plumbing',
     },
   ];
 
   tasks: Task[] = [];
-
 
   ngAfterViewInit(): void {
     this.initMap();
@@ -118,18 +120,18 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
     if (this.map) this.map.remove();
   }
 
-
   getCategoryLabel(): string {
-    const cat = this.categories.find(c => c.value === this.filters.category);
+    const cat = this.categories.find((c) => c.value === this.filters.category);
     return cat ? cat.label : 'Category';
   }
 
-
   calculateDistances(): void {
-    this.allTasks.forEach(task => {
+    this.allTasks.forEach((task) => {
       task.distance = this.haversine(
-        this.userLocation.lat, this.userLocation.lng,
-        task.location.lat, task.location.lng
+        this.userLocation.lat,
+        this.userLocation.lng,
+        task.location.lat,
+        task.location.lng
       );
     });
   }
@@ -138,23 +140,28 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) *
+      Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return Math.round(R * c);
   }
 
-
   applyFilters(): void {
-    this.tasks = this.allTasks.filter(task => {
-      const catMatch = this.filters.category === 'all' || task.category === this.filters.category;
+    this.tasks = this.allTasks.filter((task) => {
+      const catMatch =
+        this.filters.category === 'all' || task.category === this.filters.category;
 
       const distMatch = !task.distance || task.distance <= this.filters.maxDistance;
 
-      const priceMatch = !task.price || parseInt(task.price, 10) <= this.filters.maxPrice;
+      const priceMatch =
+        !task.price || parseInt(task.price, 10) <= this.filters.maxPrice;
 
-      const titleMatch = !this.searchTerm ||
+      const titleMatch =
+        !this.searchTerm ||
         task.title.toLowerCase().includes(this.searchTerm.toLowerCase());
 
       return catMatch && distMatch && priceMatch && titleMatch;
@@ -162,7 +169,6 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
 
     this.updateMapMarkers();
   }
-
 
   private initMap(): void {
     this.map = L.map(this.mapContainer.nativeElement, {
@@ -201,19 +207,28 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
   }
 
   updateMapMarkers(): void {
-    this.markers.forEach(m => m.remove());
+    this.markers.forEach((m) => m.remove());
     this.markers = [];
 
-    this.tasks.forEach(task => {
+    this.tasks.forEach((task) => {
       const m = this.createGlowMarker(task.location.lat, task.location.lng);
       m.bindPopup(this.popupContent(task)).addTo(this.map);
       this.markers.push(m);
     });
   }
 
-  toggleCategory() { this.showCategory = !this.showCategory; this.showDistance = this.showPrice = false; }
-  toggleDistance() { this.showDistance = !this.showDistance; this.showCategory = this.showPrice = false; }
-  togglePrice()    { this.showPrice = !this.showPrice; this.showCategory = this.showDistance = false; }
+  toggleCategory() {
+    this.showCategory = !this.showCategory;
+    this.showDistance = this.showPrice = false;
+  }
+  toggleDistance() {
+    this.showDistance = !this.showDistance;
+    this.showCategory = this.showPrice = false;
+  }
+  togglePrice() {
+    this.showPrice = !this.showPrice;
+    this.showCategory = this.showDistance = false;
+  }
 
   selectCategory(cat: string) {
     this.filters.category = cat;
@@ -221,12 +236,15 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
     this.applyFilters();
   }
 
-  onDistanceChange(): void { this.applyFilters(); }
-  onPriceChange(): void { this.applyFilters(); }
-
+  onDistanceChange(): void {
+    this.applyFilters();
+  }
+  onPriceChange(): void {
+    this.applyFilters();
+  }
 
   selectTask(task: Task): void {
-    const marker = this.markers.find(m => {
+    const marker = this.markers.find((m) => {
       const pos = m.getLatLng();
       return pos.lat === task.location.lat && pos.lng === task.location.lng;
     });
@@ -239,6 +257,8 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
   seeMore(task: Task): void {
     this.selectedTask = task;
     this.showModal = true;
+    this.proposedPrice = parseInt(task.price, 10) || 0;
+    this.message = '';
   }
 
   closeModal(): void {
@@ -246,9 +266,21 @@ export class BrowseTaskComponent implements AfterViewInit, OnDestroy {
     this.selectedTask = null;
   }
 
+  increasePrice(): void {
+    this.proposedPrice += 1;
+  }
+
+  decreasePrice(): void {
+    if (this.proposedPrice > 0) this.proposedPrice -= 1;
+  }
+
   postuler(): void {
     if (this.selectedTask) {
-      alert(`Application submitted for: ${this.selectedTask.title}`);
+      alert(
+        `Application submitted for: ${this.selectedTask.title}\n` +
+        `Proposed Price: ${this.proposedPrice} DT\n` +
+        `Message: ${this.message || '(no message)'}`
+      );
       this.closeModal();
     }
   }
