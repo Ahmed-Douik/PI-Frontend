@@ -16,11 +16,26 @@ export interface Offre {
   providedIn: 'root'
 })
 export class OffreService {
-private apiUrl = 'http://localhost:8080/api/offres/disponibles';
+  private apiUrl = 'http://localhost:9090/api/offres';
 
   constructor(private http: HttpClient) { }
 
   getOffres(): Observable<Offre[]> {
-    return this.http.get<Offre[]>(this.apiUrl);
+    return this.http.get<Offre[]>(this.apiUrl+"/disponibles");
   }
+
+  //get par employeur
+  getOffresByEmployer(userId: number): Observable<Offre[]> {
+    return this.http.get<Offre[]>(`${this.apiUrl}/employer/${userId}`);
+  }
+
+  //update
+  updateOffre(offreId: number, userId: number, dto: FormData): Observable<Offre> {
+    return this.http.put<Offre>(`${this.apiUrl}/${offreId}/employer/${userId}`, dto);
+  }
+
 }
+
+
+
+

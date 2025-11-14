@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { OffreService , Offre} from '../../../services/offreService/offre.service';
+import { Observable } from 'rxjs';
 
 interface Applicant {
   id: number;
@@ -17,6 +19,7 @@ interface Task {
   location: { lat: number; lng: number };
   description: string;
   category: string;
+  categorieId: number;
   status?: 'available' | 'assigned' | 'inProgress' | 'completed' | 'cancelled';
   assignedApplicant?: Applicant;
 }
@@ -27,62 +30,14 @@ interface Task {
   styleUrls: ['./tasks.component.css']
 })
 export class TasksComponent implements OnInit {
-  allTasks: Task[] = [
-    {
-      id: 1,
-      title: 'Garden trimming and cleaning',
-      date: 'Tue, 7 Oct',
-      time: 'Anytime',
-      price: '120DT',
-      location: { lat: 36.8065, lng: 10.1815 },
-      description: 'Need someone to trim hedges and clean the garden area.',
-      category: 'gardening',
-      status: 'available'
-    },
-    {
-      id: 2,
-      title: 'Apartment deep cleaning',
-      date: 'Wed, 16 Oct',
-      time: '10AM',
-      price: '90DT',
-      location: { lat: 36.8509, lng: 10.2315 },
-      description: '3-bedroom apartment needs deep cleaning including kitchen and bathrooms.',
-      category: 'cleaning',
-      status: 'assigned',
-      assignedApplicant: {
-        id: 2,
-        name: 'Emma Smith',
-        contact: '+216 98 123 456',
-        email: 'emma@example.com'
-      }
-    },
-    {
-      id: 3,
-      title: 'Deliver groceries',
-      date: 'Fri, 10 Oct',
-      time: '5PM',
-      price: '20DT',
-      location: { lat: 36.8065, lng: 10.1815 },
-      description: 'Pick up groceries and deliver to my apartment.',
-      category: 'delivery',
-      status: 'completed',
-      assignedApplicant: {
-        id: 1,
-        name: 'John Doe',
-        contact: '+216 55 999 888',
-        email: 'john@example.com',
-        proofImage: 'assets/proof.jpg'
-      }
-    }
-  ];
 
+  allTasks: Task[] = [];
   filteredTasks: Task[] = [];
   selectedStatus = 'all';
   selectedTask: Task | null = null;
   showViewModal = false;
   showEditModal = false;
 
-  // Fake list of applicants
   applicants: Applicant[] = [
     { id: 1, name: 'John Doe', contact: '+216 55 999 888', email: 'john@example.com' },
     { id: 2, name: 'Emma Smith', contact: '+216 98 123 456', email: 'emma@example.com' },
@@ -98,8 +53,34 @@ export class TasksComponent implements OnInit {
     { label: 'Cancelled', value: 'cancelled' }
   ];
 
+  constructor(private offreService: OffreService) {}
+
   ngOnInit(): void {
-    this.filteredTasks = [...this.allTasks];
+    this.loadTasksFromBackend();
+  }
+
+  loadTasksFromBackend(): void {
+    const userId = 5; // id
+    this.offreService.getOffresByEmployer(userId).subscribe({
+      next: (offres: Offre[]) => {
+
+        this.allTasks = offres.map(o => ({
+          id: o.id,
+          title: o.titre,
+          date: new Date(o.datePrevue).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
+          time: 'Anytime',
+          price: o.prix + 'DT',
+          location: { lat: o.localisationX, lng: o.localisationY },
+          description: o.description,
+          category: o.categorie.nom,
+          categorieId: o.categorie.id,
+          status: 'available'
+        }));
+
+        this.filteredTasks = [...this.allTasks];
+      },
+      error: (err) => console.error('Erreur chargement tâches :', err)
+    });
   }
 
   filterByStatus(status: string): void {
@@ -120,33 +101,21 @@ export class TasksComponent implements OnInit {
     return styles[status || 'available'] || 'bg-gray-50 text-gray-700';
   }
 
-  viewTask(task: Task): void {
-    this.selectedTask = task;
-    this.showViewModal = true;
-  }
-
-  editTask(task: Task): void {
-    this.selectedTask = { ...task };
-    this.showEditModal = true;
-  }
-
+  viewTask(task: Task): void { this.selectedTask = task; this.showViewModal = true; }
+  editTask(task: Task): void { this.selectedTask = { ...task }; this.showEditModal = true; }
   deleteTask(task: Task): void {
     if (confirm(`Are you sure you want to delete "${task.title}"?`)) {
       this.allTasks = this.allTasks.filter(t => t.id !== task.id);
       this.filterByStatus(this.selectedStatus);
     }
   }
-
   cancelTask(task: Task): void {
     if (confirm(`Are you sure you want to cancel "${task.title}"?`)) {
       const index = this.allTasks.findIndex(t => t.id === task.id);
-      if (index !== -1) {
-        this.allTasks[index].status = 'cancelled';
-      }
+      if (index !== -1) this.allTasks[index].status = 'cancelled';
       this.filterByStatus(this.selectedStatus);
     }
   }
-
   assignApplicant(applicant: Applicant): void {
     if (this.selectedTask) {
       this.selectedTask.assignedApplicant = applicant;
@@ -154,18 +123,46 @@ export class TasksComponent implements OnInit {
       this.showViewModal = true;
     }
   }
-
   saveEditedTask(): void {
-    if (this.selectedTask) {
-      const index = this.allTasks.findIndex(t => t.id === this.selectedTask!.id);
-      if (index !== -1) this.allTasks[index] = { ...this.selectedTask };
-      this.showEditModal = false;
-      this.filterByStatus(this.selectedStatus);
-    }
+    if (!this.selectedTask) return;
+
+    const userId = 5; // ton employeur
+    const formData = new FormData();
+
+    formData.append('titre', this.selectedTask.title);
+    formData.append('description', this.selectedTask.description);
+    formData.append('prix', parseFloat(this.selectedTask.price.replace('DT','').trim()).toString());
+
+
+    formData.append('localisationX', this.selectedTask.location.lat.toString());
+    formData.append('localisationY', this.selectedTask.location.lng.toString());
+
+
+    formData.append('categorieId', (this.selectedTask as any).categorieId.toString());
+
+    formData.append('datePrevue', new Date().toISOString().split('T')[0]); // ici tu peux mettre selectedTask.date si tu l'as en LocalDate
+
+
+
+    this.offreService.updateOffre(this.selectedTask.id, userId, formData).subscribe({
+      next: (updatedOffre: Offre) => {
+        const index = this.allTasks.findIndex(t => t.id === updatedOffre.id);
+        if (index !== -1) {
+          this.allTasks[index] = {
+            ...this.allTasks[index],
+            title: updatedOffre.titre,
+            description: updatedOffre.description,
+            price: updatedOffre.prix + 'DT',
+          };
+        }
+        this.filterByStatus(this.selectedStatus);
+        this.showEditModal = false;
+      },
+      error: (err) => console.error('Erreur lors de la mise à jour :', err)
+    });
   }
 
-  closeModal(): void {
-    this.showViewModal = false;
-    this.showEditModal = false;
-  }
+
+
+  closeModal(): void { this.showViewModal = false; this.showEditModal = false; }
 }
