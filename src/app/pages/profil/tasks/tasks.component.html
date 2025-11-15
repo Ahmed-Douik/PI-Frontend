@@ -58,9 +58,16 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div *ngFor="let task of filteredTasks"
-           class="bg-white rounded-xl shadow-sm hover:shadow-md transition border border-gray-200 p-5">
+           class="bg-white rounded-xl shadow-sm hover:shadow-md transition border border-gray-200 pt-8 pb-5 px-5 relative">
 
-        <div class="flex items-start justify-between mb-3">
+      <button
+          *ngIf="task.status === 'completed' || task.status === 'cancelled'"
+          (click)="deleteTask(task)"
+          class="absolute top-2 right-2 text-gray-700 hover:text-red-700 text-xl font-bold">
+          ×
+        </button>
+
+      <div class="flex items-start justify-between mb-3">
         <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {{ task.category }}
         </span>
@@ -112,14 +119,8 @@
               </svg>
             </button>
 
-            <button *ngIf="task.status !== 'completed'"
-                    (click)="cancelTask(task)"
-                    class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
-            </button>
+
+
           </div>
         </div>
       </div>
@@ -132,8 +133,8 @@
   </div>
 
   <!-- VIEW MODAL -->
-  <div *ngIf="showViewModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4 overflow-y-auto">
-    <div class="bg-white rounded-2xl p-8 w-full max-w-3xl shadow-2xl relative space-y-5
+  <div *ngIf="showViewModal"  class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4 overflow-y-auto">
+    <div  class="bg-white rounded-2xl p-8 w-full max-w-3xl shadow-2xl relative space-y-5
               max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center">
         <h3 class="text-2xl font-bold text-gray-900">{{ selectedTask?.title }}</h3>
@@ -204,12 +205,24 @@
              class="rounded-xl border border-gray-300 w-full h-80 object-cover">
       </div>
 
-      <div class="flex justify-end mt-6">
-        <button (click)="closeModal()" class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
+      <div class="flex justify-end mt-6 gap-2">
+        <button
+          (click)="closeModal()"
+          class="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
           Close
         </button>
+
+        <button   *ngIf="selectedTask?.status === 'available' || selectedTask?.status === 'assigned'"
+
+                  (click)="cancelTask(selectedTask!)"
+          class="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+          Cancel
+        </button>
       </div>
+
+
     </div>
+
   </div>
 
 
@@ -228,10 +241,7 @@
         <label class="block text-sm font-medium text-gray-700">Price</label>
         <input [(ngModel)]="selectedTask!.price" class="w-full border rounded-lg p-2" />
 
-        <label class="block text-sm font-medium text-gray-700">Status</label>
-        <select [(ngModel)]="selectedTask!.status" class="w-full border rounded-lg p-2">
-          <option *ngFor="let s of statusFilters" [value]="s.value">{{ s.label }}</option>
-        </select>
+
       </div>
 
       <div class="mt-4 flex justify-end space-x-2">

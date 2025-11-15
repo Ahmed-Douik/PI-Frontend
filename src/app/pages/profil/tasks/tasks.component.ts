@@ -9,7 +9,6 @@ interface Applicant {
   email: string;
   proofImage?: string;
 }
-
 interface Task {
   id: number;
   title: string;
@@ -59,7 +58,20 @@ export class TasksComponent implements OnInit {
     this.loadTasksFromBackend();
   }
 
+  private mapStatus(status: String): 'available' | 'assigned' | 'inProgress' | 'completed' | 'cancelled' {
+    switch (status) {
+      case 'DISPONIBLE': return 'available';
+      case 'ATTRIBUE': return 'assigned';
+      case 'ENCOURS': return 'inProgress';
+      case 'TERMINE': return 'completed';
+      case 'ANNULEE': return 'cancelled';
+      default: return 'available';
+    }
+  }
+
+
   loadTasksFromBackend(): void {
+
     const userId = 5; // id
     this.offreService.getOffresByEmployer(userId).subscribe({
       next: (offres: Offre[]) => {
@@ -74,8 +86,12 @@ export class TasksComponent implements OnInit {
           description: o.description,
           category: o.categorie.nom,
           categorieId: o.categorie.id,
-          status: 'available'
+          status: this.mapStatus(o.status as String),
         }));
+        this.allTasks.sort((a, b) => {
+          const order = ['available', 'assigned', 'inProgress', 'completed', 'cancelled'];
+          return order.indexOf(a.status!) - order.indexOf(b.status!);
+        });
 
         this.filteredTasks = [...this.allTasks];
       },
@@ -103,19 +119,54 @@ export class TasksComponent implements OnInit {
 
   viewTask(task: Task): void { this.selectedTask = task; this.showViewModal = true; }
   editTask(task: Task): void { this.selectedTask = { ...task }; this.showEditModal = true; }
+
+
   deleteTask(task: Task): void {
-    if (confirm(`Are you sure you want to delete "${task.title}"?`)) {
-      this.allTasks = this.allTasks.filter(t => t.id !== task.id);
-      this.filterByStatus(this.selectedStatus);
+    const userId = 5; // ton employeur
+
+    if (!confirm(`Are you sure you want to delete the task "${task.title}" ?`)) {
+      return;
     }
+
+    this.offreService.deleteOffre(task.id, userId).subscribe({
+      next: () => {
+        // Supprimer localement
+        this.allTasks = this.allTasks.filter(t => t.id !== task.id);
+        this.filteredTasks = this.filteredTasks.filter(t => t.id !== task.id);
+
+        console.log("Task deleted");
+      },
+      error: (err) => {
+        console.error("Error deleting task:", err);
+      }
+    });
   }
+
   cancelTask(task: Task): void {
-    if (confirm(`Are you sure you want to cancel "${task.title}"?`)) {
-      const index = this.allTasks.findIndex(t => t.id === task.id);
-      if (index !== -1) this.allTasks[index].status = 'cancelled';
-      this.filterByStatus(this.selectedStatus);
+    const userId = 5;
+    if (!confirm(`Are you sure you want to cancel "${task.title}"?`)) {
+      return;
     }
+
+    this.offreService.cancelOffre(task.id, userId).subscribe({
+      next: (updated) => {
+        const index = this.allTasks.findIndex(t => t.id === task.id);
+        if (index !== -1) {
+          this.allTasks[index].status = 'cancelled';
+        }
+
+        this.filterByStatus(this.selectedStatus);
+
+        this.showViewModal = false;
+
+        console.log('Offer cancelled successfully', updated);
+      },
+      error: (err) => console.error('Erreur annulation :', err)
+    });
   }
+
+
+
   assignApplicant(applicant: Applicant): void {
     if (this.selectedTask) {
       this.selectedTask.assignedApplicant = applicant;
@@ -165,4 +216,6 @@ export class TasksComponent implements OnInit {
 
 
   closeModal(): void { this.showViewModal = false; this.showEditModal = false; }
+
+
 }

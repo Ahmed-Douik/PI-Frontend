@@ -10,6 +10,7 @@ export interface Offre {
   localisationY: number;
   datePrevue: string;
   categorie: { id: number; nom: string };
+  status: string;
   distance?: number; // calculated
 }
 @Injectable({
@@ -26,13 +27,25 @@ export class OffreService {
 
   //get par employeur
   getOffresByEmployer(userId: number): Observable<Offre[]> {
-    return this.http.get<Offre[]>(`${this.apiUrl}/employer/${userId}`);
+    return this.http.get<Offre[]>(`${this.apiUrl}/employer/${userId}/all`);
   }
 
   //update
   updateOffre(offreId: number, userId: number, dto: FormData): Observable<Offre> {
     return this.http.put<Offre>(`${this.apiUrl}/${offreId}/employer/${userId}`, dto);
   }
+
+  //cancel
+  cancelOffre(offreId: number, userId: number) {
+    return this.http.put<Offre>(`${this.apiUrl}/${offreId}/cancel/${userId}`,{});
+  }
+
+  //delete jemla
+  deleteOffre(offreId: number, userId: number) {
+    return this.http.delete(`${this.apiUrl}/${offreId}/employer/${userId}`);
+  }
+
+
 
 }
 
