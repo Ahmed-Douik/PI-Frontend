@@ -15,7 +15,7 @@ export class AppComponent {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
         const url = event.url;
-        this.hideHeaderFooter = url.includes('/auth');
+        this.hideHeaderFooter = url.includes('/auth')|| url.includes('/admin');
       });
   }
 }

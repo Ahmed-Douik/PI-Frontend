@@ -162,31 +162,57 @@
       </div>
 
       <!-- If AVAILABLE -->
-      <div *ngIf="selectedTask?.status === 'available'" class="mt-6 border-t border-gray-200 pt-4 space-y-4">
-        <h4 class="text-xl font-semibold text-gray-800">Applicants</h4>
+      <div *ngIf="selectedTask?.status === 'available'" class="mt-6 border-t border-gray-200 pt-6">
+        <h4 class="text-xl font-semibold text-gray-800 mb-4">
+          Applicants ({{ applicants.length }})
+        </h4>
 
-        <div *ngFor="let a of applicants" class="bg-gray-50 rounded-xl border border-gray-200 p-4 flex justify-between items-center hover:shadow-md transition">
-          <div>
-            <p class="font-semibold text-gray-800">{{ a.name }}</p>
-            <p class="text-gray-600 text-sm">{{ a.contact }} — {{ a.email }}</p>
+        <div *ngIf="loadingApplicants" class="text-center py-8 text-gray-500">
+          Loading applicants...
+        </div>
 
-            <!-- Description -->
-            <p class="text-sm text-gray-500 mt-2 italic">"I have experience in {{ selectedTask?.category }} work, ready to help!"</p>
+        <div *ngIf="!loadingApplicants && applicants.length === 0" class="text-center py-8 text-gray-500">
+          No applicants yet
+        </div>
 
-            <!-- Note -->
-            <div class="mt-1 flex items-center">
-              <span *ngFor="let star of [1,2,3,4,5]" class="text-yellow-400 text-lg">★</span>
-              <span class="text-gray-400 text-sm ml-1">(5.0)</span>
+        <div *ngFor="let a of applicants" class="bg-gray-50 rounded-xl border border-gray-200 p-5 mb-4 hover:shadow-lg transition-all">
+          <div class="flex justify-between items-start">
+            <div class="flex-1">
+              <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  {{ a.name.charAt(0) }}
+                </div>
+                <div>
+                  <p class="font-bold text-gray-900 text-lg">{{ a.name }}</p>
+                  <p class="text-sm text-gray-600">{{ a.email }} • {{ a.contact }}</p>
+                </div>
+              </div>
+
+              <!-- Prix proposé -->
+              <div class="mt-4 bg-blue-100 text-blue-800 px-4 py-2 rounded-lg inline-block font-bold text-lg">
+                Prix proposé: {{ a.prixPropose }} DT
+              </div>
+
+              <!-- Message -->
+              <div class="mt-4 bg-white border border-gray-200 rounded-lg p-4">
+                <p class="text-sm text-gray-700 italic">"{{ a.message || 'No message provided' }}"</p>
+              </div>
+
+              <!-- Date -->
+              <p class="text-xs text-gray-500 mt-3">
+                Applied on: {{ a.dateCandidature ? (a.dateCandidature | date:'short') : 'Unknown' }}
+              </p>
+            </div>
+
+            <div class="ml-6">
+              <button (click)="assignApplicant(a)"
+                      class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-xl transition transform hover:scale-105">
+                Assign Task
+              </button>
             </div>
           </div>
-
-          <button (click)="assignApplicant(a)"
-                  class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-            Assign
-          </button>
         </div>
       </div>
-
       <!-- If ASSIGNED -->
       <div *ngIf="selectedTask?.status === 'assigned'" class="mt-6 border-t border-gray-200 pt-4">
         <h4 class="text-xl font-semibold text-gray-800 mb-3">Assigned to</h4>

@@ -45,6 +45,17 @@ export class OffreService {
     return this.http.delete(`${this.apiUrl}/${offreId}/employer/${userId}`);
   }
 
+  // Add inside OffreService class
+      getApplicants(offreId: number, employerId: number): Observable<any[]> {
+        return this.http.get<any[]>( `${this.apiUrl}/${offreId}/employer/${employerId}/candidatures` );
+      }
+    assignCandidature(offreId: number, candidatureId: number, employerId: number): Observable<Offre> {
+      return this.http.put<Offre>(
+        `${this.apiUrl}/${offreId}/assign/${candidatureId}/employer/${employerId}`,
+        {}
+      );
+    }
+
 
 
 }

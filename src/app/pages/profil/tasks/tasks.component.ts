@@ -1,14 +1,18 @@
 import { Component, OnInit } from '@angular/core';
-import { OffreService , Offre} from '../../../services/offreService/offre.service';
+import { OffreService, Offre } from '../../../services/offreService/offre.service';
 import { Observable } from 'rxjs';
 
 interface Applicant {
-  id: number;
+  id: number;                    // ← THIS WILL NOW BE THE CANDIDATURE ID
   name: string;
   contact: string;
   email: string;
+  prixPropose?: number;
+  message?: string;
+  dateCandidature?: string;
   proofImage?: string;
 }
+
 interface Task {
   id: number;
   title: string;
@@ -36,12 +40,8 @@ export class TasksComponent implements OnInit {
   selectedTask: Task | null = null;
   showViewModal = false;
   showEditModal = false;
-
-  applicants: Applicant[] = [
-    { id: 1, name: 'John Doe', contact: '+216 55 999 888', email: 'john@example.com' },
-    { id: 2, name: 'Emma Smith', contact: '+216 98 123 456', email: 'emma@example.com' },
-    { id: 3, name: 'Adam Karim', contact: '+216 22 777 555', email: 'adam@example.com' }
-  ];
+  applicants: Applicant[] = [];
+  loadingApplicants = false;
 
   statusFilters = [
     { label: 'All', value: 'all' },
@@ -52,13 +52,22 @@ export class TasksComponent implements OnInit {
     { label: 'Cancelled', value: 'cancelled' }
   ];
 
-  constructor(private offreService: OffreService) {}
+  private currentUserId: number;
+
+  constructor(private offreService: OffreService) {
+    const userJson = localStorage.getItem('currentUser');
+    this.currentUserId = userJson ? JSON.parse(userJson).id : 0;
+
+    if (!this.currentUserId) {
+      console.error('No user logged in!');
+    }
+  }
 
   ngOnInit(): void {
     this.loadTasksFromBackend();
   }
 
-  private mapStatus(status: String): 'available' | 'assigned' | 'inProgress' | 'completed' | 'cancelled' {
+  private mapStatus(status: string): 'available' | 'assigned' | 'inProgress' | 'completed' | 'cancelled' {
     switch (status) {
       case 'DISPONIBLE': return 'available';
       case 'ATTRIBUE': return 'assigned';
@@ -69,13 +78,11 @@ export class TasksComponent implements OnInit {
     }
   }
 
-
   loadTasksFromBackend(): void {
+    if (!this.currentUserId) return;
 
-    const userId = 5; // id
-    this.offreService.getOffresByEmployer(userId).subscribe({
+    this.offreService.getOffresByEmployer(this.currentUserId).subscribe({
       next: (offres: Offre[]) => {
-
         this.allTasks = offres.map(o => ({
           id: o.id,
           title: o.titre,
@@ -86,8 +93,9 @@ export class TasksComponent implements OnInit {
           description: o.description,
           category: o.categorie.nom,
           categorieId: o.categorie.id,
-          status: this.mapStatus(o.status as String),
+          status: this.mapStatus(o.status as string),
         }));
+
         this.allTasks.sort((a, b) => {
           const order = ['available', 'assigned', 'inProgress', 'completed', 'cancelled'];
           return order.indexOf(a.status!) - order.indexOf(b.status!);
@@ -117,85 +125,127 @@ export class TasksComponent implements OnInit {
     return styles[status || 'available'] || 'bg-gray-50 text-gray-700';
   }
 
-  viewTask(task: Task): void { this.selectedTask = task; this.showViewModal = true; }
+  viewTask(task: Task): void {
+    this.selectedTask = task;
+    this.showViewModal = true;
+    this.applicants = [];
+    this.loadingApplicants = true;
+
+    if (task.status === 'available' && this.currentUserId) {
+      this.offreService.getApplicants(task.id, this.currentUserId).subscribe({
+        next: (candidatures) => {
+          this.applicants = candidatures.map(c => ({
+            id: c.id,                                            // ← CANDIDATURE ID (fixed!)
+            name: c.utilisateur.nom + ' ' + c.utilisateur.prenom,
+            contact: c.utilisateur.telephone || '+216 XX XXX XXX',
+            email: c.utilisateur.email,
+            prixPropose: c.prixPropose,
+            message: c.message,
+            dateCandidature: c.dateCandidature
+          }));
+          this.loadingApplicants = false;
+        },
+        error: (err) => {
+          console.error('Erreur chargement candidats:', err);
+          this.applicants = [];
+          this.loadingApplicants = false;
+        }
+      });
+    } else {
+      this.loadingApplicants = false;
+    }
+  }
+
+  assignApplicant(applicant: Applicant): void {
+  if (!this.selectedTask || !this.currentUserId) return;
+
+  const candidatureId = applicant.id;
+
+  if (!confirm(`Attribuer cette tâche à ${applicant.name} pour ${applicant.prixPropose} DT ?`)) {
+    return;
+  }
+
+  this.offreService.assignCandidature(this.selectedTask.id, candidatureId, this.currentUserId)
+    .subscribe({
+      next: (updatedOffre) => {
+        // Update task in list
+        const taskIndex = this.allTasks.findIndex(t => t.id === this.selectedTask!.id);
+        if (taskIndex !== -1) {
+          this.allTasks[taskIndex].status = 'assigned';
+          this.allTasks[taskIndex].price = updatedOffre.prix + ' DT';
+          // Save the assigned worker
+          this.allTasks[taskIndex].assignedApplicant = { ...applicant };
+        }
+
+        // Update current modal task
+        this.selectedTask!.status = 'assigned';
+        this.selectedTask!.price = updatedOffre.prix + ' DT';
+        this.selectedTask!.assignedApplicant = { ...applicant }; // ← THIS IS KEY!
+
+        // Clear applicants list (others deleted)
+        this.applicants = [];
+
+        alert(`${applicant.name} a été assigné avec succès ! Prix final: ${updatedOffre.prix} DT`);
+      },
+      error: (err) => {
+        alert(err.error || 'Erreur lors de l\'attribution');
+      }
+    });
+}
+
   editTask(task: Task): void { this.selectedTask = { ...task }; this.showEditModal = true; }
 
-
   deleteTask(task: Task): void {
-    const userId = 5; // ton employeur
+    if (!this.currentUserId) return;
 
     if (!confirm(`Are you sure you want to delete the task "${task.title}" ?`)) {
       return;
     }
 
-    this.offreService.deleteOffre(task.id, userId).subscribe({
+    this.offreService.deleteOffre(task.id, this.currentUserId).subscribe({
       next: () => {
-        // Supprimer localement
         this.allTasks = this.allTasks.filter(t => t.id !== task.id);
         this.filteredTasks = this.filteredTasks.filter(t => t.id !== task.id);
-
         console.log("Task deleted");
       },
-      error: (err) => {
-        console.error("Error deleting task:", err);
-      }
+      error: (err) => console.error("Error deleting task:", err)
     });
   }
 
   cancelTask(task: Task): void {
-    const userId = 5;
+    if (!this.currentUserId) return;
+
     if (!confirm(`Are you sure you want to cancel "${task.title}"?`)) {
       return;
     }
 
-    this.offreService.cancelOffre(task.id, userId).subscribe({
+    this.offreService.cancelOffre(task.id, this.currentUserId).subscribe({
       next: (updated) => {
         const index = this.allTasks.findIndex(t => t.id === task.id);
         if (index !== -1) {
           this.allTasks[index].status = 'cancelled';
         }
-
         this.filterByStatus(this.selectedStatus);
-
         this.showViewModal = false;
-
         console.log('Offer cancelled successfully', updated);
       },
       error: (err) => console.error('Erreur annulation :', err)
     });
   }
 
-
-
-  assignApplicant(applicant: Applicant): void {
-    if (this.selectedTask) {
-      this.selectedTask.assignedApplicant = applicant;
-      this.selectedTask.status = 'assigned';
-      this.showViewModal = true;
-    }
-  }
   saveEditedTask(): void {
-    if (!this.selectedTask) return;
+    if (!this.selectedTask || !this.currentUserId) return;
 
-    const userId = 5; // ton employeur
     const formData = new FormData();
-
     formData.append('titre', this.selectedTask.title);
     formData.append('description', this.selectedTask.description);
     formData.append('prix', parseFloat(this.selectedTask.price.replace('DT','').trim()).toString());
-
-
     formData.append('localisationX', this.selectedTask.location.lat.toString());
     formData.append('localisationY', this.selectedTask.location.lng.toString());
-
-
     formData.append('categorieId', (this.selectedTask as any).categorieId.toString());
+    formData.append('datePrevue', new Date().toISOString().split('T')[0]);
 
-    formData.append('datePrevue', new Date().toISOString().split('T')[0]); // ici tu peux mettre selectedTask.date si tu l'as en LocalDate
-
-
-
-    this.offreService.updateOffre(this.selectedTask.id, userId, formData).subscribe({
+    this.offreService.updateOffre(this.selectedTask.id, this.currentUserId, formData).subscribe({
       next: (updatedOffre: Offre) => {
         const index = this.allTasks.findIndex(t => t.id === updatedOffre.id);
         if (index !== -1) {
@@ -213,9 +263,5 @@ export class TasksComponent implements OnInit {
     });
   }
 
-
-
   closeModal(): void { this.showViewModal = false; this.showEditModal = false; }
-
-
 }
